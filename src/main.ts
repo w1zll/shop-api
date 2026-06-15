@@ -2,13 +2,13 @@ import "reflect-metadata";
 
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
-import { NestFactory } from "@nestjs/core";
-import { ConfigService } from "@nestjs/config";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { NestFactory } from "@nestjs/core";
 
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { setupOpenApi } from "./openapi/openapi";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,15 +27,7 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle("Shop API")
-    .setDescription("API демонстрационного магазина на микрофронтендах")
-    .setVersion("0.1.0")
-    .addCookieAuth("access_token")
-    .build();
-
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup("api/docs", app, document);
+  setupOpenApi(app);
 
   await app.listen(port, "0.0.0.0");
 }

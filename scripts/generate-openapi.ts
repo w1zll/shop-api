@@ -7,6 +7,7 @@ import { NestFactory } from "@nestjs/core";
 import { format } from "prettier";
 
 import { AppModule } from "../src/app.module";
+import { configureApp } from "../src/app.setup";
 import { createOpenApiDocument } from "../src/openapi/openapi";
 
 async function main() {
@@ -14,7 +15,7 @@ async function main() {
     logger: false,
   });
 
-  app.setGlobalPrefix("api/v1");
+  configureApp(app);
 
   const document = createOpenApiDocument(app);
   const outputPath = join(process.cwd(), "openapi", "openapi.json");

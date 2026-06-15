@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 import request from "supertest";
 
 import { AppModule } from "../src/app.module";
+import { configureApp } from "../src/app.setup";
 import { PrismaService } from "../src/prisma/prisma.service";
 
 describe("Health endpoints", () => {
@@ -22,7 +23,7 @@ describe("Health endpoints", () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.setGlobalPrefix("api/v1");
+    configureApp(app);
     await app.init();
     // Nest exposes the underlying HTTP server as `any`; Supertest accepts this server shape.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

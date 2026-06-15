@@ -32,7 +32,9 @@
 - health endpoints;
 - Prisma schema для пользователей, каталога, корзины, заказов и избранного;
 - idempotent seed с тестовыми категориями, товарами и пользователем;
-- публичный Catalog API.
+- публичный Catalog API;
+- JWT-аутентификация через HttpOnly cookies;
+- CSRF-защита для unsafe HTTP methods.
 
 ## Локальная разработка
 
@@ -91,7 +93,7 @@ email: demo@example.com
 password: password123
 ```
 
-Пароль в seed пока хранится как технический `sha256`-hash. На этапе auth он будет заменен на полноценный password hashing для реального login flow.
+Пароль в seed хранится как `bcrypt` hash. В репозитории находится только исходный тестовый пароль для локальной проверки demo-аккаунта.
 
 Для проверки данных можно открыть Prisma Studio:
 
@@ -117,6 +119,13 @@ http://localhost:4000
 GET /api/v1/health
 GET /api/v1/health/database
 GET /api/docs
+
+GET  /api/v1/auth/csrf
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+GET  /api/v1/auth/me
 
 GET /api/v1/categories
 GET /api/v1/categories/:slug
@@ -158,6 +167,43 @@ availableFilters
 ```
 
 Публичный Catalog API возвращает только активные товары. Цены передаются в cents без преобразования в рубли.
+
+## Auth и CSRF
+
+Аутентификация использует две HttpOnly cookies:
+
+```text
+access_token
+refresh_token
+```
+
+Refresh token хранится в БД только как hash в модели `Session`. При каждом `POST /api/v1/auth/refresh` refresh token ротируется, а повторное использование старого refresh token приводит к отказу и отзыву сессии.
+
+Для `POST`, `PUT`, `PATCH` и `DELETE` включена CSRF-защита:
+
+1. клиент вызывает `GET /api/v1/auth/csrf`;
+2. API устанавливает non-HttpOnly cookie `csrf_token`;
+3. для unsafe-запросов клиент отправляет тот же токен в заголовке `X-CSRF-Token`;
+4. API сравнивает cookie и заголовок, а также проверяет `Origin` против `FRONTEND_ORIGIN`.
+
+Пример локального flow:
+
+```bash
+curl -i http://localhost:4000/api/v1/auth/csrf
+```
+
+После этого frontend должен отправлять `csrf_token` cookie и заголовок:
+
+```text
+X-CSRF-Token: <value from csrf_token cookie>
+Origin: http://localhost:3000
+```
+
+На этапе локальной разработки `FRONTEND_ORIGIN` по умолчанию:
+
+```text
+http://localhost:3000
+```
 
 ## OpenAPI
 

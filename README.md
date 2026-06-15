@@ -31,7 +31,8 @@
 - Swagger по `/api/docs`;
 - health endpoints;
 - Prisma schema для пользователей, каталога, корзины, заказов и избранного;
-- idempotent seed с тестовыми категориями, товарами и пользователем.
+- idempotent seed с тестовыми категориями, товарами и пользователем;
+- публичный Catalog API.
 
 ## Локальная разработка
 
@@ -116,7 +117,69 @@ http://localhost:4000
 GET /api/v1/health
 GET /api/v1/health/database
 GET /api/docs
+
+GET /api/v1/categories
+GET /api/v1/categories/:slug
+GET /api/v1/products
+GET /api/v1/products/featured
+GET /api/v1/products/:slug
+GET /api/v1/products/search/suggestions
 ```
+
+`GET /api/v1/products` поддерживает query-параметры:
+
+```text
+category
+search
+brand
+minPrice
+maxPrice
+inStock
+sort
+page
+limit
+```
+
+Доступные варианты `sort`:
+
+```text
+newest
+price-asc
+price-desc
+name-asc
+```
+
+Ответ списка товаров содержит:
+
+```text
+items
+pagination
+availableFilters
+```
+
+Публичный Catalog API возвращает только активные товары. Цены передаются в cents без преобразования в рубли.
+
+## OpenAPI
+
+Swagger UI доступен локально по адресу:
+
+```text
+http://localhost:4000/api/docs
+```
+
+JSON-контракт для генерации типов фронтенда хранится в:
+
+```text
+openapi/openapi.json
+```
+
+Обновить контракт можно командой:
+
+```bash
+pnpm openapi:generate
+```
+
+Фронтенд-приложения смогут генерировать типы из этого файла через `openapi-typescript` или похожий инструмент. Конкретную команду генерации добавим в consumer-репозиториях, когда будем подключать первый фронт к API.
 
 ## Проверки
 
@@ -127,5 +190,6 @@ pnpm test
 pnpm test:e2e
 pnpm prisma:validate
 pnpm prisma:generate
+pnpm openapi:generate
 pnpm build
 ```

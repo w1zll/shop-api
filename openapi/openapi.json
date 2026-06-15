@@ -1,0 +1,376 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": { "200": { "description": "API is running." } },
+        "tags": ["health"]
+      }
+    },
+    "/api/v1/health/database": {
+      "get": {
+        "operationId": "HealthController_getDatabaseHealth",
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Database connection is healthy." }
+        },
+        "tags": ["health"]
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "operationId": "CatalogController_getCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CategoryDto" }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/v1/categories/{slug}": {
+      "get": {
+        "operationId": "CatalogController_getCategoryBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CategoryDto" }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "CatalogController_getProducts",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": { "example": "electronics", "type": "string" }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": { "example": "наушники", "type": "string" }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "schema": { "example": "AirBeat", "type": "string" }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": { "minimum": 0, "example": 100000, "type": "number" }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": { "minimum": 0, "example": 1000000, "type": "number" }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "schema": { "example": true, "type": "boolean" }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "newest",
+              "type": "string",
+              "enum": ["newest", "price-asc", "price-desc", "name-asc"]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12,
+              "example": 12,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductListDto" }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/v1/products/featured": {
+      "get": {
+        "operationId": "CatalogController_getFeaturedProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FeaturedProductsDto" }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/v1/products/search/suggestions": {
+      "get": {
+        "operationId": "CatalogController_getSearchSuggestions",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": { "example": "науш", "type": "string" }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5,
+              "example": 5,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchSuggestionsDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/v1/products/{slug}": {
+      "get": {
+        "operationId": "CatalogController_getProductBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductDto" }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    }
+  },
+  "info": {
+    "title": "Shop API",
+    "description": "API демонстрационного магазина на микрофронтендах",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": { "type": "apiKey", "in": "cookie", "name": "access_token" }
+    },
+    "schemas": {
+      "CategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "description": { "type": "object", "nullable": true },
+          "imageUrl": { "type": "object", "nullable": true },
+          "parentId": { "type": "object", "nullable": true },
+          "productsCount": { "type": "number" }
+        },
+        "required": ["id", "name", "slug", "productsCount"]
+      },
+      "ProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        },
+        "required": ["id", "name", "slug"]
+      },
+      "ProductImageDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "url": { "type": "string" },
+          "alt": { "type": "string" },
+          "position": { "type": "number" }
+        },
+        "required": ["id", "url", "alt", "position"]
+      },
+      "ProductDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "description": { "type": "string" },
+          "brand": { "type": "string" },
+          "priceCents": { "type": "number" },
+          "oldPriceCents": { "type": "object", "nullable": true },
+          "stock": { "type": "number" },
+          "isFeatured": { "type": "boolean" },
+          "attributes": { "type": "object" },
+          "category": { "$ref": "#/components/schemas/ProductCategoryDto" },
+          "images": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProductImageDto" }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "description",
+          "brand",
+          "priceCents",
+          "stock",
+          "isFeatured",
+          "attributes",
+          "category",
+          "images"
+        ]
+      },
+      "PaginationDto": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "number" },
+          "limit": { "type": "number" },
+          "total": { "type": "number" },
+          "totalPages": { "type": "number" }
+        },
+        "required": ["page", "limit", "total", "totalPages"]
+      },
+      "AvailableFiltersDto": {
+        "type": "object",
+        "properties": {
+          "brands": { "type": "array", "items": { "type": "string" } },
+          "minPriceCents": { "type": "object", "nullable": true },
+          "maxPriceCents": { "type": "object", "nullable": true },
+          "hasInStock": { "type": "boolean" }
+        },
+        "required": ["brands", "hasInStock"]
+      },
+      "ProductListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProductDto" }
+          },
+          "pagination": { "$ref": "#/components/schemas/PaginationDto" },
+          "availableFilters": {
+            "$ref": "#/components/schemas/AvailableFiltersDto"
+          }
+        },
+        "required": ["items", "pagination", "availableFilters"]
+      },
+      "FeaturedProductsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProductDto" }
+          }
+        },
+        "required": ["items"]
+      },
+      "SearchSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "slug": { "type": "string" },
+          "brand": { "type": "string" }
+        },
+        "required": ["label", "slug", "brand"]
+      },
+      "SearchSuggestionsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SearchSuggestionDto" }
+          }
+        },
+        "required": ["items"]
+      }
+    }
+  }
+}

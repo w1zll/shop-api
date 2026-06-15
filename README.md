@@ -29,7 +29,9 @@
 - global validation pipe;
 - единый формат ошибок;
 - Swagger по `/api/docs`;
-- health endpoints.
+- health endpoints;
+- Prisma schema для пользователей, каталога, корзины, заказов и избранного;
+- idempotent seed с тестовыми категориями, товарами и пользователем.
 
 ## Локальная разработка
 
@@ -60,6 +62,42 @@ cp .env.example .env
 postgresql://shop_mfs:your-local-password@localhost:5432/shop_mfs?schema=public
 ```
 
+## Prisma
+
+Схема находится в `prisma/schema.prisma`.
+
+Основные модели:
+
+- `User`, `Session`;
+- `Category`, `Product`, `ProductImage`;
+- `Favorite`;
+- `Cart`, `CartItem`;
+- `Order`, `OrderItem`.
+
+`OrderItem` хранит snapshot товара: название, slug, изображение и цену на момент оформления заказа. Это позволяет сохранять историю заказов даже после изменения товара.
+
+Миграции и seed запускаются разработчиком вручную:
+
+```bash
+pnpm prisma:migrate:dev --name init_schema
+pnpm db:seed
+```
+
+После seed доступен тестовый пользователь:
+
+```text
+email: demo@example.com
+password: password123
+```
+
+Пароль в seed пока хранится как технический `sha256`-hash. На этапе auth он будет заменен на полноценный password hashing для реального login flow.
+
+Для проверки данных можно открыть Prisma Studio:
+
+```bash
+pnpm prisma studio
+```
+
 ## Запуск
 
 ```bash
@@ -87,5 +125,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:e2e
+pnpm prisma:validate
+pnpm prisma:generate
 pnpm build
 ```

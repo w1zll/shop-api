@@ -10,10 +10,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "db:seed": "prisma db seed",
     "format": "prettier . --check",
     "format:write": "prettier . --write",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
     "prisma:validate": "prisma validate",
     "start:dev": "node --watch -r ts-node/register src/main.ts",
     "start:prod": "node dist/main.js",

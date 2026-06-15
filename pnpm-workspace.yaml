@@ -1,0 +1,10 @@
+allowBuilds:
+  "@prisma/engines": true
+  "@scarf/scarf": false
+  prisma: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - "@nestjs/common@11.1.27"
+  - "@nestjs/core@11.1.27"
+  - "@nestjs/platform-express@11.1.27"
+  - "@nestjs/testing@11.1.27"

@@ -1,0 +1,60 @@
+{
+  "name": "shop-api",
+  "version": "0.1.0",
+  "description": "NestJS API for the Shop MFS demo project.",
+  "private": true,
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.6.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "format": "prettier . --check",
+    "format:write": "prettier . --write",
+    "lint": "eslint .",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "start:dev": "node --watch -r ts-node/register src/main.ts",
+    "start:prod": "node dist/main.js",
+    "test": "jest --config jest.config.cjs",
+    "test:e2e": "jest --config test/jest-e2e.config.cjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.27",
+    "@nestjs/config": "4.0.4",
+    "@nestjs/core": "11.1.27",
+    "@nestjs/platform-express": "11.1.27",
+    "@nestjs/swagger": "11.4.4",
+    "@prisma/adapter-pg": "7.8.0",
+    "@prisma/client": "7.8.0",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "cookie-parser": "1.4.7",
+    "dotenv": "17.4.2",
+    "helmet": "8.2.0",
+    "pg": "8.21.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@nestjs/testing": "11.1.27",
+    "@types/cookie-parser": "1.4.10",
+    "@types/express": "5.0.6",
+    "@types/jest": "30.0.0",
+    "@types/node": "25.9.3",
+    "@types/pg": "8.20.0",
+    "@types/supertest": "7.2.0",
+    "eslint": "10.5.0",
+    "jest": "30.4.2",
+    "prettier": "3.8.4",
+    "prisma": "7.8.0",
+    "supertest": "7.2.2",
+    "ts-jest": "29.4.11",
+    "ts-node": "10.9.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.61.0"
+  }
+}

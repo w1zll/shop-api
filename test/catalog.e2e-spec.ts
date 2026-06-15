@@ -1,9 +1,9 @@
-import { INestApplication, ValidationPipe } from "@nestjs/common";
+import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 
 import { AppModule } from "../src/app.module";
-import { AllExceptionsFilter } from "../src/common/filters/all-exceptions.filter";
+import { configureApp } from "../src/app.setup";
 import { PrismaService } from "../src/prisma/prisma.service";
 
 const createdAt = new Date("2026-01-01T00:00:00.000Z");
@@ -138,15 +138,7 @@ describe("Catalog endpoints", () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.setGlobalPrefix("api/v1");
-    app.useGlobalFilters(new AllExceptionsFilter());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        whitelist: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
+    configureApp(app);
     await app.init();
     // Nest exposes the underlying HTTP server as `any`; Supertest accepts this server shape.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

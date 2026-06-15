@@ -1,6 +1,5 @@
 import "dotenv/config";
-import { createHash } from "node:crypto";
-
+import bcrypt from "bcryptjs";
 import { Prisma, PrismaClient, UserRole } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -525,7 +524,7 @@ const products = [
 ] satisfies SeedProduct[];
 
 function createPasswordHash(password: string) {
-  return `sha256:${createHash("sha256").update(password).digest("hex")}`;
+  return bcrypt.hash(password, 12);
 }
 
 async function seedCategories() {
@@ -616,14 +615,14 @@ async function seedTestUser() {
     where: { email: "demo@example.com" },
     create: {
       email: "demo@example.com",
-      passwordHash: createPasswordHash("password123"),
+      passwordHash: await createPasswordHash("password123"),
       name: "Тестовый пользователь",
       avatarUrl: "https://api.dicebear.com/9.x/initials/svg?seed=Demo",
       bonusBalanceCents: 150000,
       role: UserRole.USER,
     },
     update: {
-      passwordHash: createPasswordHash("password123"),
+      passwordHash: await createPasswordHash("password123"),
       name: "Тестовый пользователь",
       avatarUrl: "https://api.dicebear.com/9.x/initials/svg?seed=Demo",
       bonusBalanceCents: 150000,

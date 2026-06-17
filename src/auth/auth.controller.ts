@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from "@ne
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "../common/cookies";
+import { ACCESS_TOKEN_COOKIE, ANONYMOUS_CART_COOKIE, REFRESH_TOKEN_COOKIE } from "../common/cookies";
 import { AuthService } from "./auth.service";
 import { AuthResponseDto, CsrfResponseDto } from "./dto/auth-response.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -26,15 +26,15 @@ export class AuthController {
   @Post("register")
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: AuthResponseDto })
-  register(@Body() dto: RegisterDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.register(dto, response);
+  register(@Body() dto: RegisterDto, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    return this.authService.register(dto, response, readCookies(request)?.[ANONYMOUS_CART_COOKIE]);
   }
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: AuthResponseDto })
-  login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.login(dto, response);
+  login(@Body() dto: LoginDto, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(dto, response, readCookies(request)?.[ANONYMOUS_CART_COOKIE]);
   }
 
   @Post("refresh")

@@ -34,7 +34,8 @@
 - idempotent seed с тестовыми категориями, товарами и пользователем;
 - публичный Catalog API;
 - JWT-аутентификация через HttpOnly cookies;
-- CSRF-защита для unsafe HTTP methods.
+- CSRF-защита для unsafe HTTP methods;
+- Cart API с anonymous cart, user cart и merge после входа.
 
 ## Локальная разработка
 
@@ -133,6 +134,13 @@ GET /api/v1/products
 GET /api/v1/products/featured
 GET /api/v1/products/:slug
 GET /api/v1/products/search/suggestions
+
+GET    /api/v1/cart
+GET    /api/v1/cart/summary
+POST   /api/v1/cart/items
+PATCH  /api/v1/cart/items/:itemId
+DELETE /api/v1/cart/items/:itemId
+DELETE /api/v1/cart
 ```
 
 `GET /api/v1/products` поддерживает query-параметры:
@@ -167,6 +175,40 @@ availableFilters
 ```
 
 Публичный Catalog API возвращает только активные товары. Цены передаются в cents без преобразования в рубли.
+
+## Cart API
+
+Корзина хранится в PostgreSQL и является серверным источником истины для cart remote.
+
+Если пользователь не авторизован, API создаёт anonymous cart и выставляет HttpOnly cookie:
+
+```text
+anonymous_cart_id
+```
+
+Если пользователь авторизован через `access_token`, API использует cart, связанную с `User`.
+При `POST /api/v1/auth/register`, `POST /api/v1/auth/login` или первом запросе корзины с обеими
+cookies anonymous cart сливается в user cart, одинаковые товары объединяются, quantity ограничивается
+актуальным `Product.stock`, а anonymous cookie очищается.
+
+Изменяющие cart-запросы защищены тем же CSRF flow, что и auth endpoints. Клиент должен отправлять:
+
+```text
+credentials: include
+Origin: http://localhost:3000
+X-CSRF-Token: <value from csrf_token cookie>
+```
+
+Ответ `GET /api/v1/cart` содержит:
+
+```text
+id
+isAnonymous
+items
+summary.itemsCount
+summary.totalQuantity
+summary.subtotalCents
+```
 
 ## Auth и CSRF
 

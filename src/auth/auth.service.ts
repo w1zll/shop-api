@@ -8,6 +8,7 @@ import { Response } from "express";
 import { User, UserRole } from "@prisma/client";
 
 import { ACCESS_TOKEN_COOKIE, CSRF_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "../common/cookies";
+import { CartService } from "../cart/cart.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "../prisma/prisma.service";
@@ -70,6 +71,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly cartService: CartService,
   ) {
     this.accessTokenSecret =
       this.configService.get<string>("ACCESS_TOKEN_SECRET") ?? DEFAULT_ACCESS_TOKEN_SECRET;
@@ -95,7 +97,7 @@ export class AuthService {
     return { csrfToken };
   }
 
-  async register(dto: RegisterDto, response: Response) {
+  async register(dto: RegisterDto, response: Response, anonymousCartId?: string) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -115,13 +117,14 @@ export class AuthService {
     });
 
     await this.createSession(user, response);
+    await this.cartService.mergeAnonymousCartIntoUserCart(user.id, anonymousCartId, response);
 
     return {
       user: toPublicUser(user),
     };
   }
 
-  async login(dto: LoginDto, response: Response) {
+  async login(dto: LoginDto, response: Response, anonymousCartId?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -131,6 +134,7 @@ export class AuthService {
     }
 
     await this.createSession(user, response);
+    await this.cartService.mergeAnonymousCartIntoUserCart(user.id, anonymousCartId, response);
 
     return {
       user: toPublicUser(user),

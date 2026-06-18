@@ -13,6 +13,7 @@ import {
 import { PrismaService } from "../src/prisma/prisma.service";
 
 const allowedOrigin = "http://localhost:3000";
+const swaggerOrigin = "http://localhost:4000";
 
 type StoredSession = Session;
 
@@ -346,6 +347,39 @@ describe("Auth endpoints", () => {
         name: "Demo User",
       })
       .expect(403);
+  });
+
+  it("allows Swagger UI origin in local development", async () => {
+    const csrfCookie = await getCsrfCookie();
+    const csrfToken = getCookieValue(csrfCookie);
+
+    await request(server)
+      .post("/api/v1/auth/register")
+      .set("Origin", swaggerOrigin)
+      .set("X-CSRF-Token", csrfToken)
+      .set("Cookie", csrfCookie)
+      .send({
+        email: "swagger@example.com",
+        password: "password123",
+        name: "Swagger User",
+      })
+      .expect(200);
+  });
+
+  it("allows API clients without Origin in local development", async () => {
+    const csrfCookie = await getCsrfCookie();
+    const csrfToken = getCookieValue(csrfCookie);
+
+    await request(server)
+      .post("/api/v1/auth/register")
+      .set("X-CSRF-Token", csrfToken)
+      .set("Cookie", csrfCookie)
+      .send({
+        email: "postman@example.com",
+        password: "password123",
+        name: "Postman User",
+      })
+      .expect(200);
   });
 
   it("rejects unsafe requests with wrong Origin", async () => {

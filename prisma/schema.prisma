@@ -12,17 +12,18 @@ enum UserRole {
 }
 
 enum OrderStatus {
-  CREATED
+  PENDING_PAYMENT
   PAID
-  CANCELLED
+  PROCESSING
+  SHIPPED
   COMPLETED
+  CANCELLED
 }
 
 enum PaymentStatus {
   PENDING
-  PAID
+  SUCCEEDED
   FAILED
-  REFUNDED
 }
 
 enum DeliveryMethod {
@@ -43,6 +44,7 @@ model User {
   carts             Cart[]
   favorites         Favorite[]
   orders            Order[]
+  payments          Payment[]
   sessions          Session[]
 }
 
@@ -154,7 +156,7 @@ model Order {
   id              String         @id @default(cuid())
   number          String         @unique
   userId          String
-  status          OrderStatus    @default(CREATED)
+  status          OrderStatus    @default(PENDING_PAYMENT)
   paymentStatus   PaymentStatus  @default(PENDING)
   subtotalCents   Int
   discountCents   Int            @default(0)
@@ -166,11 +168,29 @@ model Order {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   items           OrderItem[]
+  payments        Payment[]
   user            User           @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([createdAt])
   @@index([status])
   @@index([userId])
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  orderId        String
+  userId         String
+  status         PaymentStatus @default(PENDING)
+  amountCents    Int
+  idempotencyKey String        @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
 }
 
 model OrderItem {

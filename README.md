@@ -36,6 +36,7 @@
 - JWT-аутентификация через HttpOnly cookies;
 - CSRF-защита для unsafe HTTP methods;
 - Cart API с anonymous cart, user cart и merge после входа.
+- Account API для профиля, избранного и истории заказов.
 
 ## Локальная разработка
 
@@ -148,6 +149,13 @@ POST /api/v1/orders
 POST /api/v1/orders/:id/pay/mock
 GET  /api/v1/orders
 GET  /api/v1/orders/:id
+
+GET   /api/v1/users/me
+PATCH /api/v1/users/me
+
+GET    /api/v1/favorites
+POST   /api/v1/favorites/:productId
+DELETE /api/v1/favorites/:productId
 ```
 
 `GET /api/v1/products` поддерживает query-параметры:
@@ -238,6 +246,30 @@ Checkout доступен только авторизованному польз
 mock `Payment` со статусом `SUCCEEDED`, очищает корзину и начисляет тестовые бонусы.
 
 `GET /api/v1/orders` и `GET /api/v1/orders/:id` возвращают только заказы текущего пользователя.
+`GET /api/v1/orders` поддерживает `page` и `limit`.
+
+## Account API
+
+`GET /api/v1/users/me` возвращает текущий профиль пользователя. `PATCH /api/v1/users/me`
+позволяет обновить только:
+
+```text
+name
+avatarUrl
+```
+
+Загрузка файлов не реализуется: `avatarUrl` хранится как строка.
+
+Избранное доступно через:
+
+```text
+GET    /api/v1/favorites
+POST   /api/v1/favorites/:productId
+DELETE /api/v1/favorites/:productId
+```
+
+Повторное добавление одного товара возвращает `409 Conflict`. Все account endpoints требуют
+`access_token` cookie.
 
 ## Auth и CSRF
 

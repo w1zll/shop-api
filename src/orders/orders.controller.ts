@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 
 import { ACCESS_TOKEN_COOKIE } from "../common/cookies";
+import { ListOrdersQueryDto } from "./dto/list-orders-query.dto";
 import { CreateOrderDto, MockPaymentDto } from "./dto/order-request.dto";
 import { OrderDto, OrdersListDto } from "./dto/order-response.dto";
 import { OrdersService } from "./orders.service";
@@ -36,8 +37,8 @@ export class OrdersController {
 
   @Get()
   @ApiOkResponse({ type: OrdersListDto })
-  listOrders(@Req() request: Request) {
-    return this.ordersService.listOrders(readCookies(request)?.[ACCESS_TOKEN_COOKIE]);
+  listOrders(@Req() request: Request, @Query() query: ListOrdersQueryDto) {
+    return this.ordersService.listOrders(readCookies(request)?.[ACCESS_TOKEN_COOKIE], query);
   }
 
   @Get(":id")

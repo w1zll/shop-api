@@ -74,4 +74,12 @@ export class OrderDto {
 export class OrdersListDto {
   @ApiProperty({ type: [OrderDto] })
   items!: OrderDto[];
+
+  @ApiProperty()
+  pagination!: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }

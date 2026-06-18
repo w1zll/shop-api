@@ -474,6 +474,102 @@
         },
         "tags": ["auth"]
       }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "operationId": "OrdersController_createOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOrderDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderDto" }
+              }
+            }
+          }
+        },
+        "tags": ["orders"]
+      },
+      "get": {
+        "operationId": "OrdersController_listOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrdersListDto" }
+              }
+            }
+          }
+        },
+        "tags": ["orders"]
+      }
+    },
+    "/api/v1/orders/{id}/pay/mock": {
+      "post": {
+        "operationId": "OrdersController_payMock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MockPaymentDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderDto" }
+              }
+            }
+          }
+        },
+        "tags": ["orders"]
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_getOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderDto" }
+              }
+            }
+          }
+        },
+        "tags": ["orders"]
+      }
     }
   },
   "info": {
@@ -739,6 +835,121 @@
           }
         },
         "required": ["email", "password"]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "city": { "type": "string" },
+          "street": { "type": "string" },
+          "house": { "type": "string" },
+          "apartment": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "deliveryMethod": { "type": "string", "enum": ["PICKUP", "COURIER"] },
+          "bonusToSpend": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000000
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "city",
+          "street",
+          "house",
+          "postalCode",
+          "deliveryMethod"
+        ]
+      },
+      "OrderItemDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "productId": { "type": "string" },
+          "productName": { "type": "string" },
+          "productSlug": { "type": "string" },
+          "productImage": { "type": "object", "nullable": true },
+          "unitPriceCents": { "type": "number" },
+          "quantity": { "type": "number" },
+          "totalCents": { "type": "number" }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "productSlug",
+          "unitPriceCents",
+          "quantity",
+          "totalCents"
+        ]
+      },
+      "OrderDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "number": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "PAID",
+              "PROCESSING",
+              "SHIPPED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": ["PENDING", "SUCCEEDED", "FAILED"]
+          },
+          "subtotalCents": { "type": "number" },
+          "discountCents": { "type": "number" },
+          "bonusSpentCents": { "type": "number" },
+          "deliveryCents": { "type": "number" },
+          "totalCents": { "type": "number" },
+          "deliveryMethod": { "type": "string", "enum": ["PICKUP", "COURIER"] },
+          "deliveryAddress": { "type": "object" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItemDto" }
+          },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "paymentStatus",
+          "subtotalCents",
+          "discountCents",
+          "bonusSpentCents",
+          "deliveryCents",
+          "totalCents",
+          "deliveryMethod",
+          "deliveryAddress",
+          "items",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "MockPaymentDto": {
+        "type": "object",
+        "properties": { "idempotencyKey": { "type": "string" } },
+        "required": ["idempotencyKey"]
+      },
+      "OrdersListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderDto" }
+          }
+        },
+        "required": ["items"]
       }
     }
   }

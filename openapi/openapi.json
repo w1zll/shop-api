@@ -501,7 +501,29 @@
       },
       "get": {
         "operationId": "OrdersController_listOrders",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [{ "$ref": "#/components/schemas/Object" }]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "allOf": [{ "$ref": "#/components/schemas/Object" }]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -569,6 +591,113 @@
           }
         },
         "tags": ["orders"]
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "operationId": "UsersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["users"]
+      },
+      "patch": {
+        "operationId": "UsersController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateProfileDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["users"]
+      }
+    },
+    "/api/v1/favorites": {
+      "get": {
+        "operationId": "FavoritesController_listFavorites",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoritesListDto" }
+              }
+            }
+          }
+        },
+        "tags": ["favorites"]
+      }
+    },
+    "/api/v1/favorites/{productId}": {
+      "post": {
+        "operationId": "FavoritesController_addFavorite",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoriteDto" }
+              }
+            }
+          }
+        },
+        "tags": ["favorites"]
+      },
+      "delete": {
+        "operationId": "FavoritesController_removeFavorite",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "properties": { "ok": { "type": "boolean" } } }
+              }
+            }
+          }
+        },
+        "tags": ["favorites"]
       }
     }
   },
@@ -941,12 +1070,83 @@
         "properties": { "idempotencyKey": { "type": "string" } },
         "required": ["idempotencyKey"]
       },
+      "Object": { "type": "object", "properties": {} },
       "OrdersListDto": {
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/OrderDto" }
+          },
+          "pagination": { "type": "object" }
+        },
+        "required": ["items", "pagination"]
+      },
+      "UserProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "name": { "type": "string" },
+          "avatarUrl": { "type": "object", "nullable": true },
+          "bonusBalanceCents": { "type": "number" },
+          "role": { "type": "string" }
+        },
+        "required": ["id", "email", "name", "bonusBalanceCents", "role"]
+      },
+      "UserProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/UserProfileDto" }
+        },
+        "required": ["user"]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 120 },
+          "avatarUrl": { "type": "string", "nullable": true }
+        }
+      },
+      "FavoriteProductDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "brand": { "type": "string" },
+          "priceCents": { "type": "number" },
+          "oldPriceCents": { "type": "object", "nullable": true },
+          "stock": { "type": "number" },
+          "imageUrl": { "type": "object", "nullable": true }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "brand",
+          "priceCents",
+          "oldPriceCents",
+          "stock",
+          "imageUrl"
+        ]
+      },
+      "FavoriteDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "productId": { "type": "string" },
+          "createdAt": { "type": "string" },
+          "product": { "$ref": "#/components/schemas/FavoriteProductDto" }
+        },
+        "required": ["id", "productId", "createdAt", "product"]
+      },
+      "FavoritesListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FavoriteDto" }
           }
         },
         "required": ["items"]

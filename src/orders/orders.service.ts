@@ -13,6 +13,7 @@ import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 
 import { AuthTokenPayload } from "../auth/auth.types";
 import { PrismaService } from "../prisma/prisma.service";
+import { ListOrdersQueryDto } from "./dto/list-orders-query.dto";
 import { CreateOrderDto, MockPaymentDto } from "./dto/order-request.dto";
 
 const DEFAULT_ACCESS_TOKEN_SECRET = "change-me-access-token-secret";
@@ -262,16 +263,29 @@ export class OrdersService {
     });
   }
 
-  async listOrders(accessToken: string | undefined) {
+  async listOrders(accessToken: string | undefined, query: ListOrdersQueryDto = new ListOrdersQueryDto()) {
     const userId = this.resolveUserId(accessToken);
-    const orders = await this.prisma.order.findMany({
-      where: { userId },
-      include: orderInclude,
-      orderBy: { createdAt: "desc" },
-    });
+    const page = query.page;
+    const limit = query.limit;
+    const [total, orders] = await Promise.all([
+      this.prisma.order.count({ where: { userId } }),
+      this.prisma.order.findMany({
+        where: { userId },
+        include: orderInclude,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
 
     return {
       items: orders.map((order) => this.mapOrder(order)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 

@@ -10,6 +10,10 @@ function readCookies(request: Request) {
   return request.cookies as Record<string, string | undefined> | undefined;
 }
 
+function normalizeOrigin(origin: string | undefined) {
+  return origin?.trim().replace(/\/$/, "");
+}
+
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
@@ -20,17 +24,32 @@ export class CsrfMiddleware implements NestMiddleware {
       return;
     }
 
-    const expectedOrigin = this.configService.get<string>(
+    const frontendOrigin = this.configService.get<string>(
       "FRONTEND_ORIGIN",
       "http://localhost:3000",
     );
+    const nodeEnv = this.configService.get<string>("NODE_ENV", "development");
+    const port = this.configService.get<number>("PORT", 4000);
     const origin = request.header("origin");
+    const allowedOrigins = new Set([
+      normalizeOrigin(frontendOrigin),
+      ...(nodeEnv === "production" ? [] : [`http://localhost:${String(port)}`]),
+    ]);
 
-    if (origin !== expectedOrigin) {
+    if (!origin && nodeEnv !== "production") {
+      this.validateCsrfToken(request, next);
+      return;
+    }
+
+    if (!allowedOrigins.has(normalizeOrigin(origin))) {
       next(new ForbiddenException("Invalid request origin"));
       return;
     }
 
+    this.validateCsrfToken(request, next);
+  }
+
+  private validateCsrfToken(request: Request, next: NextFunction) {
     const csrfCookie = readCookies(request)?.[CSRF_TOKEN_COOKIE];
     const csrfHeader = request.header("x-csrf-token");
 

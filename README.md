@@ -76,14 +76,16 @@ postgresql://shop_mfs:your-local-password@localhost:5432/shop_mfs?schema=public
 - `Category`, `Product`, `ProductImage`;
 - `Favorite`;
 - `Cart`, `CartItem`;
-- `Order`, `OrderItem`.
+- `Order`, `OrderItem`, `Payment`.
 
 `OrderItem` хранит snapshot товара: название, slug, изображение и цену на момент оформления заказа. Это позволяет сохранять историю заказов даже после изменения товара.
+`Payment` хранит mock-платёж и `idempotencyKey`, чтобы повторный запрос оплаты не создавал дубль.
 
 Миграции и seed запускаются разработчиком вручную:
 
 ```bash
 pnpm prisma:migrate:dev --name init_schema
+pnpm prisma:migrate:dev --name checkout_api
 pnpm db:seed
 ```
 
@@ -141,6 +143,11 @@ POST   /api/v1/cart/items
 PATCH  /api/v1/cart/items/:itemId
 DELETE /api/v1/cart/items/:itemId
 DELETE /api/v1/cart
+
+POST /api/v1/orders
+POST /api/v1/orders/:id/pay/mock
+GET  /api/v1/orders
+GET  /api/v1/orders/:id
 ```
 
 `GET /api/v1/products` поддерживает query-параметры:
@@ -210,6 +217,28 @@ summary.totalQuantity
 summary.subtotalCents
 ```
 
+## Checkout API
+
+Checkout доступен только авторизованному пользователю с `access_token` cookie.
+
+`POST /api/v1/orders` создаёт заказ из текущей user cart в транзакции:
+
+- читает cart и товары;
+- проверяет, что товары активны и stock достаточен;
+- пересчитывает цены на сервере;
+- проверяет и списывает бонусы;
+- создаёт `Order` и snapshot-строки `OrderItem`;
+- уменьшает `Product.stock`;
+- устанавливает статус `PENDING_PAYMENT`.
+
+Клиент не передаёт итоговую стоимость заказа. Поля доставки и контактов приходят в body, а сумма
+считается только на сервере.
+
+`POST /api/v1/orders/:id/pay/mock` принимает `idempotencyKey`, переводит заказ в `PAID`, создаёт
+mock `Payment` со статусом `SUCCEEDED`, очищает корзину и начисляет тестовые бонусы.
+
+`GET /api/v1/orders` и `GET /api/v1/orders/:id` возвращают только заказы текущего пользователя.
+
 ## Auth и CSRF
 
 Аутентификация использует две HttpOnly cookies:
@@ -246,6 +275,11 @@ Origin: http://localhost:3000
 ```text
 http://localhost:3000
 ```
+
+В `development` и `test` режимах дополнительно разрешён Swagger UI origin
+`http://localhost:4000`, а API-клиенты без `Origin` header, например Postman, могут выполнять
+unsafe-запросы при наличии корректной пары `csrf_token` cookie и `X-CSRF-Token` header. В
+`production` отсутствие или несовпадение `Origin` отклоняется.
 
 ## OpenAPI
 

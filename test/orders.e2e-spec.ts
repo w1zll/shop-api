@@ -283,6 +283,9 @@ function createPrismaMock() {
       }),
     },
     order: {
+      count: jest.fn().mockImplementation((args: { where: { userId: string } }) =>
+        Promise.resolve(orders.filter((order) => order.userId === args.where.userId).length),
+      ),
       create: jest.fn().mockImplementation(
         (args: {
           data: Omit<OrderRecord, "id" | "createdAt" | "updatedAt"> & {
@@ -323,8 +326,13 @@ function createPrismaMock() {
 
         return Promise.resolve(order ? buildOrder(order) : null);
       }),
-      findMany: jest.fn().mockImplementation((args: { where: { userId: string } }) =>
-        Promise.resolve(orders.filter((order) => order.userId === args.where.userId).map(buildOrder)),
+      findMany: jest.fn().mockImplementation((args: { where: { userId: string }; skip?: number; take?: number }) =>
+        Promise.resolve(
+          orders
+            .filter((order) => order.userId === args.where.userId)
+            .slice(args.skip ?? 0, (args.skip ?? 0) + (args.take ?? orders.length))
+            .map(buildOrder),
+        ),
       ),
       update: jest.fn().mockImplementation(
         (args: {

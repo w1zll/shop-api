@@ -4,10 +4,12 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
 import { CartModule } from "./cart/cart.module";
 import { CatalogModule } from "./catalog/catalog.module";
+import { FavoritesModule } from "./favorites/favorites.module";
 import { validateEnvironment } from "./config/environment";
 import { HealthModule } from "./health/health.module";
 import { OrdersModule } from "./orders/orders.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { UsersModule } from "./users/users.module";
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { PrismaModule } from "./prisma/prisma.module";
     CartModule,
     AuthModule,
     OrdersModule,
+    UsersModule,
+    FavoritesModule,
   ],
 })
 export class AppModule {}

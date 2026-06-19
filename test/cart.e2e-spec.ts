@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+﻿import jwt from "jsonwebtoken";
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { UserRole } from "@prisma/client";
@@ -6,7 +6,11 @@ import request from "supertest";
 
 import { AppModule } from "../src/app.module";
 import { configureApp } from "../src/app.setup";
-import { ACCESS_TOKEN_COOKIE, ANONYMOUS_CART_COOKIE, CSRF_TOKEN_COOKIE } from "../src/common/cookies";
+import {
+  ACCESS_TOKEN_COOKIE,
+  ANONYMOUS_CART_COOKIE,
+  CSRF_TOKEN_COOKIE,
+} from "../src/common/cookies";
 import { PrismaService } from "../src/prisma/prisma.service";
 
 const allowedOrigin = "http://localhost:3000";
@@ -104,7 +108,9 @@ function createPrismaMock() {
       oldPriceCents: null,
       stock: 5,
       isActive: true,
-      images: [{ id: "image-1", url: "https://example.com/phone.jpg", alt: "Demo Phone", position: 0 }],
+      images: [
+        { id: "image-1", url: "https://example.com/phone.jpg", alt: "Demo Phone", position: 0 },
+      ],
     },
     {
       id: "product-2",
@@ -137,9 +143,9 @@ function createPrismaMock() {
     $connect: jest.fn(),
     $disconnect: jest.fn(),
     $queryRaw: jest.fn().mockResolvedValue([{ "?column?": 1 }]),
-    $transaction: jest.fn().mockImplementation((callback: (tx: typeof prisma) => Promise<unknown>) =>
-      callback(prisma),
-    ),
+    $transaction: jest
+      .fn()
+      .mockImplementation((callback: (tx: typeof prisma) => Promise<unknown>) => callback(prisma)),
     user: {
       findUnique: jest.fn().mockResolvedValue(null),
       create: jest.fn(),
@@ -164,42 +170,46 @@ function createPrismaMock() {
       }),
     },
     cart: {
-      upsert: jest.fn().mockImplementation(
-        (args: {
-          where: { userId?: string | null; anonymousId?: string | null };
-          create: { userId?: string; anonymousId?: string };
-        }) => {
-          const cart =
-            carts.find(
-              (item) =>
-                (args.where.userId && item.userId === args.where.userId) ||
-                (args.where.anonymousId && item.anonymousId === args.where.anonymousId),
-            ) ??
-            (() => {
-              const created: CartRecord = {
-                id: `cart-${String(carts.length + 1)}`,
-                userId: args.create.userId ?? null,
-                anonymousId: args.create.anonymousId ?? null,
-                createdAt: now,
-                updatedAt: now,
-              };
-              carts.push(created);
-              return created;
-            })();
+      upsert: jest
+        .fn()
+        .mockImplementation(
+          (args: {
+            where: { userId?: string | null; anonymousId?: string | null };
+            create: { userId?: string; anonymousId?: string };
+          }) => {
+            const cart =
+              carts.find(
+                (item) =>
+                  (args.where.userId && item.userId === args.where.userId) ||
+                  (args.where.anonymousId && item.anonymousId === args.where.anonymousId),
+              ) ??
+              (() => {
+                const created: CartRecord = {
+                  id: `cart-${String(carts.length + 1)}`,
+                  userId: args.create.userId ?? null,
+                  anonymousId: args.create.anonymousId ?? null,
+                  createdAt: now,
+                  updatedAt: now,
+                };
+                carts.push(created);
+                return created;
+              })();
 
-          return Promise.resolve(buildCart(cart));
-        },
-      ),
-      findUnique: jest.fn().mockImplementation(
-        (args: { where: { id?: string; anonymousId?: string }; include?: unknown }) => {
-          const cart =
-            carts.find(
-              (item) => item.id === args.where.id || item.anonymousId === args.where.anonymousId,
-            ) ?? null;
+            return Promise.resolve(buildCart(cart));
+          },
+        ),
+      findUnique: jest
+        .fn()
+        .mockImplementation(
+          (args: { where: { id?: string; anonymousId?: string }; include?: unknown }) => {
+            const cart =
+              carts.find(
+                (item) => item.id === args.where.id || item.anonymousId === args.where.anonymousId,
+              ) ?? null;
 
-          return Promise.resolve(cart ? buildCart(cart) : null);
-        },
-      ),
+            return Promise.resolve(cart ? buildCart(cart) : null);
+          },
+        ),
       delete: jest.fn().mockImplementation((args: { where: { id: string } }) => {
         const index = carts.findIndex((cart) => cart.id === args.where.id);
 
@@ -217,22 +227,25 @@ function createPrismaMock() {
       }),
     },
     cartItem: {
-      create: jest.fn().mockImplementation(
-        (args: { data: { cartId: string; productId: string; quantity: number } }) => {
-          const item: CartItemRecord = {
-            id: `item-${String(cartItems.length + 1)}`,
-            cartId: args.data.cartId,
-            productId: args.data.productId,
-            quantity: args.data.quantity,
-            createdAt: now,
-            updatedAt: now,
-          };
-          cartItems.push(item);
-          return Promise.resolve(item);
-        },
-      ),
-      update: jest.fn().mockImplementation(
-        (args: { where: { id: string }; data: { quantity: number } }) => {
+      create: jest
+        .fn()
+        .mockImplementation(
+          (args: { data: { cartId: string; productId: string; quantity: number } }) => {
+            const item: CartItemRecord = {
+              id: `item-${String(cartItems.length + 1)}`,
+              cartId: args.data.cartId,
+              productId: args.data.productId,
+              quantity: args.data.quantity,
+              createdAt: now,
+              updatedAt: now,
+            };
+            cartItems.push(item);
+            return Promise.resolve(item);
+          },
+        ),
+      update: jest
+        .fn()
+        .mockImplementation((args: { where: { id: string }; data: { quantity: number } }) => {
           const item = cartItems.find((cartItem) => cartItem.id === args.where.id);
 
           if (!item) {
@@ -241,8 +254,7 @@ function createPrismaMock() {
 
           item.quantity = args.data.quantity;
           return Promise.resolve(item);
-        },
-      ),
+        }),
       delete: jest.fn().mockImplementation((args: { where: { id: string } }) => {
         const index = cartItems.findIndex((item) => item.id === args.where.id);
 

@@ -1,12 +1,7 @@
-import { randomUUID } from "node:crypto";
+﻿import { randomUUID } from "node:crypto";
 
 import jwt from "jsonwebtoken";
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
 import { Prisma } from "@prisma/client";
@@ -190,7 +185,7 @@ export class CartService {
     response: Response,
     tx: TransactionClient | PrismaService = this.prisma,
   ) {
-    const userId = this.resolveUserId(context.accessToken);
+    const userId = this.resolveUserId(context.accessToken, response);
 
     if (userId) {
       if (context.anonymousId) {
@@ -302,7 +297,7 @@ export class CartService {
     return cart;
   }
 
-  private resolveUserId(accessToken: string | undefined) {
+  private resolveUserId(accessToken: string | undefined, response: Response) {
     if (!accessToken) {
       return undefined;
     }
@@ -311,16 +306,14 @@ export class CartService {
       const payload = jwt.verify(accessToken, this.accessTokenSecret) as AuthTokenPayload;
 
       if (payload.type !== "access") {
-        throw new UnauthorizedException("Invalid access token");
+        this.clearAccessTokenCookie(response);
+        return undefined;
       }
 
       return payload.sub;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-
-      throw new UnauthorizedException("Invalid access token");
+    } catch {
+      this.clearAccessTokenCookie(response);
+      return undefined;
     }
   }
 
@@ -388,6 +381,12 @@ export class CartService {
 
   private clearAnonymousCartCookie(response: Response) {
     response.clearCookie(ANONYMOUS_CART_COOKIE, {
+      path: "/",
+    });
+  }
+
+  private clearAccessTokenCookie(response: Response) {
+    response.clearCookie(ACCESS_TOKEN_COOKIE, {
       path: "/",
     });
   }

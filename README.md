@@ -287,7 +287,7 @@ Refresh token хранится в БД только как hash в модели 
 1. клиент вызывает `GET /api/v1/auth/csrf`;
 2. API устанавливает non-HttpOnly cookie `csrf_token`;
 3. для unsafe-запросов клиент отправляет тот же токен в заголовке `X-CSRF-Token`;
-4. API сравнивает cookie и заголовок, а также проверяет `Origin` против `FRONTEND_ORIGIN`.
+4. API сравнивает cookie и заголовок, а также проверяет `Origin` против `FRONTEND_ORIGIN` и `FRONTEND_ORIGINS`.
 
 Пример локального flow:
 
@@ -307,6 +307,17 @@ Origin: http://localhost:3000
 ```text
 http://localhost:3000
 ```
+
+Для production и preview можно добавить дополнительные доверенные origins через comma-separated
+allowlist:
+
+```text
+FRONTEND_ORIGIN=https://<production-shell-host>
+FRONTEND_ORIGINS=https://<dev-shell-preview-host>,https://<catalog-host>,https://<cart-remote-host>,https://<account-remote-host>
+```
+
+`FRONTEND_ORIGINS` принимает только точные origins без path. Wildcard-паттерны намеренно не
+поддерживаются.
 
 В `development` и `test` режимах дополнительно разрешён Swagger UI origin
 `http://localhost:4000`, а API-клиенты без `Origin` header, например Postman, могут выполнять

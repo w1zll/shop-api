@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: shop_mfs_ci
+          POSTGRES_PASSWORD: shop_mfs_ci_password
+          POSTGRES_USER: shop_mfs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shop_mfs -d shop_mfs_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      ACCESS_TOKEN_SECRET: ci-access-token-secret
+      CSRF_SECRET: ci-csrf-secret
+      DATABASE_URL: postgresql://shop_mfs:shop_mfs_ci_password@localhost:5432/shop_mfs_ci?schema=public
+      DIRECT_URL: postgresql://shop_mfs:shop_mfs_ci_password@localhost:5432/shop_mfs_ci?schema=public
+      FRONTEND_ORIGIN: http://localhost:3000
+      NODE_ENV: test
+      REFRESH_TOKEN_SECRET: ci-refresh-token-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.6.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 24
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma validate
+        run: pnpm prisma:validate
+
+      - name: Prisma generate
+        run: pnpm prisma:generate
+
+      - name: Apply migrations
+        run: pnpm exec prisma migrate deploy
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      - name: Build
+        run: pnpm build

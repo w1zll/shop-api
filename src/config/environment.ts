@@ -14,10 +14,31 @@ export interface EnvironmentConfig {
   REFRESH_TOKEN_TTL: string;
   CSRF_SECRET?: string;
   FRONTEND_ORIGIN: string;
+  FRONTEND_ORIGINS: string[];
 }
 
 function optionalString(value: unknown) {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
+function optionalStringList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  const rawValue = optionalString(value);
+
+  if (!rawValue) {
+    return [];
+  }
+
+  return rawValue
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 }
 
 function readPort(value: unknown) {
@@ -53,5 +74,6 @@ export function validateEnvironment(config: Record<string, unknown>): Environmen
     REFRESH_TOKEN_TTL: optionalString(config.REFRESH_TOKEN_TTL) ?? "30d",
     CSRF_SECRET: optionalString(config.CSRF_SECRET),
     FRONTEND_ORIGIN: optionalString(config.FRONTEND_ORIGIN) ?? "http://localhost:3000",
+    FRONTEND_ORIGINS: optionalStringList(config.FRONTEND_ORIGINS),
   };
 }

@@ -14,6 +14,19 @@ function normalizeOrigin(origin: string | undefined) {
   return origin?.trim().replace(/\/$/, "");
 }
 
+function readOrigins(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return (
+    value
+      ?.split(",")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0) ?? []
+  );
+}
+
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
@@ -28,11 +41,13 @@ export class CsrfMiddleware implements NestMiddleware {
       "FRONTEND_ORIGIN",
       "http://localhost:3000",
     );
+    const frontendOrigins = this.configService.get<string | string[]>("FRONTEND_ORIGINS", []);
     const nodeEnv = this.configService.get<string>("NODE_ENV", "development");
     const port = this.configService.get<number>("PORT", 4000);
     const origin = request.header("origin");
     const allowedOrigins = new Set([
       normalizeOrigin(frontendOrigin),
+      ...readOrigins(frontendOrigins).map((item) => normalizeOrigin(item)),
       ...(nodeEnv === "production" ? [] : [`http://localhost:${String(port)}`]),
     ]);
 

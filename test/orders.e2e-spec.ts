@@ -509,6 +509,7 @@ describe("Orders endpoints", () => {
         expect(body).toMatchObject({
           status: OrderStatus.PAID,
           paymentStatus: PaymentStatus.SUCCEEDED,
+          earnedBonusCents: 9_500,
         });
       });
 

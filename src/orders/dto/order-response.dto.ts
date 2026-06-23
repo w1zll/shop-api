@@ -50,6 +50,9 @@ export class OrderDto {
   bonusSpentCents!: number;
 
   @ApiProperty()
+  earnedBonusCents!: number;
+
+  @ApiProperty()
   deliveryCents!: number;
 
   @ApiProperty()

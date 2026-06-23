@@ -338,6 +338,10 @@ export class OrdersService {
       subtotalCents: order.subtotalCents,
       discountCents: order.discountCents,
       bonusSpentCents: order.bonusSpentCents,
+      earnedBonusCents:
+        order.paymentStatus === PaymentStatus.SUCCEEDED
+          ? Math.floor(order.totalCents * TEST_BONUS_RATE)
+          : 0,
       deliveryCents: order.deliveryCents,
       totalCents: order.totalCents,
       deliveryMethod: order.deliveryMethod,

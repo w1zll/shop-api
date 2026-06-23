@@ -1,6 +1,6 @@
 # Shop API
 
-`shop-api` — NestJS API для демонстрационного магазина на микрофронтендах.
+`shop-api` — NestJS API для интернет-магазина.
 
 ## Ответственность
 
@@ -14,30 +14,6 @@
 - Swagger/OpenAPI;
 - Prisma, migrations и seed.
 
-На текущем этапе реализован bootstrap приложения:
-
-- NestJS 11;
-- Node.js 24;
-- pnpm;
-- TypeScript strict;
-- ESLint и Prettier;
-- Jest и Supertest;
-- ConfigModule;
-- Prisma service;
-- Helmet;
-- cookie-parser;
-- global validation pipe;
-- единый формат ошибок;
-- Swagger по `/api/docs`;
-- health endpoints;
-- Prisma schema для пользователей, каталога, корзины, заказов и избранного;
-- idempotent seed с тестовыми категориями, товарами и пользователем;
-- публичный Catalog API;
-- JWT-аутентификация через HttpOnly cookies;
-- CSRF-защита для unsafe HTTP methods;
-- Cart API с anonymous cart, user cart и merge после входа.
-- Account API для профиля, избранного и истории заказов.
-
 ## Локальная разработка
 
 ```bash
@@ -50,12 +26,9 @@ pnpm test:e2e
 pnpm build
 ```
 
-На Windows, если PowerShell блокирует `pnpm.ps1`, можно использовать `pnpm.cmd`.
-
 ## Переменные окружения
 
 Создать локальный `.env` из `.env.example` и заполнить значения вручную.
-Настоящие секреты не коммитятся.
 
 ```bash
 cp .env.example .env
@@ -344,7 +317,7 @@ openapi/openapi.json
 pnpm openapi:generate
 ```
 
-Фронтенд-приложения смогут генерировать типы из этого файла через `openapi-typescript` или похожий инструмент. Конкретную команду генерации добавим в consumer-репозиториях, когда будем подключать первый фронт к API.
+Фронтенд-приложения смогут генерировать типы из этого файла через `openapi-typescript` или похожий инструмент.
 
 ## Проверки
 
